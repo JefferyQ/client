@@ -22,7 +22,6 @@ export const rowsProvider = {
       name: Types.getPathName(path),
       type: 'folder',
       itemStyles: folderItemStyles,
-      onAction: Sb.action('onAction'),
       isEmpty: pathStr.includes('empty'),
     }
   },
@@ -34,6 +33,31 @@ export const rowsProvider = {
     kbfsEnabled: false,
     openInSystemFileManager: Sb.action('openInSystemFileManager'),
     installFuse: Sb.action('installFuse'),
+  }),
+  ConnectedRows: o => ({
+    items: [
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me'), name: 'me'},
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,empty'), name: 'me,abc'},
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,abc,def'), name: 'me,abc,def'},
+      {
+        rowType: 'still',
+        path: Types.stringToPath('/keybase/private/me,abc,def,ghi'),
+        name: 'me,abc,def,ghi',
+      },
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,def'), name: 'me,def'},
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,def,ghi'), name: 'me,def,ghi'},
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,ghi'), name: 'me,ghi'},
+      {rowType: 'still', path: Types.stringToPath('/keybase/private/me,abc,ghi'), name: 'me,abc,ghi'},
+    ],
+    routePath: I.List(),
+    ...o,
+  }),
+  ConnectedFilesLoadingHoc: o => ({
+    ...o,
+    syncingPaths: Sb.action('syncingPaths'),
+    loadFolderList: Sb.action('loadFolderList'),
+    loadFavorites: Sb.action('loadFavorites'),
+    path: '',
   }),
 }
 

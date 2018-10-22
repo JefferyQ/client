@@ -62,7 +62,7 @@ class Files extends React.PureComponent<FolderProps> {
 }
 
 const styles = Styles.styleSheetCreate({
-  outerContainer: {
+  outercontainer: {
     height: '100%',
     position: 'relative',
   },
