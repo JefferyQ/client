@@ -324,6 +324,7 @@ func (h *PGPHandler) PGPPushPrivate(ctx context.Context, arg keybase1.PGPPushPri
 		LogUI:     h.getLogUI(arg.SessionID),
 		SessionID: arg.SessionID,
 		SecretUI:  h.getSecretUI(arg.SessionID, h.G()),
+		GPGUI:     h.getGPGUI(arg.SessionID),
 	}
 	eng := engine.NewPGPPushPrivate(arg)
 	m := libkb.NewMetaContext(ctx, h.G()).WithUIs(uis)
@@ -335,6 +336,7 @@ func (h *PGPHandler) PGPPullPrivate(ctx context.Context, arg keybase1.PGPPullPri
 		LogUI:     h.getLogUI(arg.SessionID),
 		SessionID: arg.SessionID,
 		SecretUI:  h.getSecretUI(arg.SessionID, h.G()),
+		GPGUI:     h.getGPGUI(arg.SessionID),
 	}
 	eng := engine.NewPGPPullPrivate(arg)
 	m := libkb.NewMetaContext(ctx, h.G()).WithUIs(uis)
