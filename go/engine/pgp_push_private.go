@@ -38,7 +38,7 @@ func NewPGPPushPrivate(arg keybase1.PGPPushPrivateArg) *PGPPushPrivate {
 func getCurrentUserPGPKeys(m libkb.MetaContext) ([]libkb.PGPFingerprint, error) {
 	uid := m.CurrentUID()
 	if uid.IsNil() {
-		return nil, libkb.LoginRequiredError{"login required for push/pull of PGP private keys to KBFS"}
+		return nil, libkb.NewLoginRequiredError("for push/pull of PGP private keys to KBFS")
 	}
 	upk, _, err := m.G().GetUPAKLoader().LoadV2(libkb.NewLoadUserArgWithMetaContext(m).WithUID(uid))
 	if err != nil {
@@ -87,7 +87,36 @@ func (e *PGPPushPrivate) mkdir(m libkb.MetaContext, fs *keybase1.SimpleFSClient,
 }
 
 func (e *PGPPushPrivate) write(m libkb.MetaContext, fs *keybase1.SimpleFSClient, path string, data string) (err error) {
+	opid, err := fs.SimpleFSMakeOpid(m.Ctx())
+	if err != nil {
+		return err
+	}
+	defer fs.SimpleFSClose(m.Ctx(), opid)
+	err = fs.SimpleFSOpen(m.Ctx(), keybase1.SimpleFSOpenArg{
+		OpID:  opid,
+		Dest:  keybase1.NewPathWithKbfs(path),
+		Flags: keybase1.OpenFlags_EXISTING,
+	})
+	if err != nil {
+		return err
+	}
+	err = fs.SimpleFSWrite(m.Ctx(), keybase1.SimpleFSWriteArg{
+		OpID:    opid,
+		Offset:  0,
+		Content: []byte(data),
+	})
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (e *PGPPushPrivate) link(m libkb.MetaContext, fs *keybase1.SimpleFSClient, file string, link string) (err error) {
+	err = fs.SimpleFSSymlink(m.Ctx(), keybase1.SimpleFSSymlinkArg{
+		Target: file,
+		Link:   keybase1.NewPathWithKbfs(link),
+	})
+	return err
 }
 
 func (e *PGPPushPrivate) push(m libkb.MetaContext, fp libkb.PGPFingerprint, tty string, fs *keybase1.SimpleFSClient) error {
@@ -98,7 +127,7 @@ func (e *PGPPushPrivate) push(m libkb.MetaContext, fp libkb.PGPFingerprint, tty 
 
 	username := m.CurrentUsername()
 	if username.IsNil() {
-		return libkb.LoginRequiredError{"no username found"}
+		return libkb.NewLoginRequiredError("no username found")
 	}
 
 	path := "/kebase/private/" + username.String() + ".keys"
@@ -118,6 +147,7 @@ func (e *PGPPushPrivate) push(m libkb.MetaContext, fp libkb.PGPFingerprint, tty 
 		return err
 	}
 
+	err = e.link(m, fs, file, link)
 	return err
 }
 
